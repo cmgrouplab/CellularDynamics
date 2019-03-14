@@ -3,18 +3,20 @@
 #include <cmath>
 
 //*************Set Parameters**************
-const double LENGTH = 1;                    // The length of box
-const double DENSITY = 0.25;                // The density of system
-const double RADIUS = 0.05;                 // The radius of particles
-const double DIFFCOEFF = 1;                 // The diffusion coefficient
-const double KCON = RADIUS * 0.00001;       // The coefficient for contact force
-const double KECM = RADIUS * 0.00001;       // The coefficient for ECM force
+const double LENGTH = 1;     // The length of box
+const double DENSITY = 0.6; // The density of system
+const double RADIUS = 0.05;  // The radius of particles
+const double DIFFCOEFF = 1;  // The diffusion coefficient
+
+const double KCON = RADIUS * 0.00001; // The coefficient for contact force
+const double KECM = RADIUS * 0.00001; // The coefficient for ECM force
+
 const double DIFFCOEFF2 = RADIUS * 0.00001; // The diffusion coefficient for random force
-const double EPS = 0.0000000002;            // A samll number for preventing division divergence
+//const double EPS = 0.0000000002;            // A samll number for preventing division divergence
 const double FSELF = RADIUS * 0.00001;      // The self propulsion force
 const double ANGLE = 1;                     // For ECM force
 const double DELTATIME = 0.01;              // particles[i].position[0] += DELTATIME * particles[i].velocity[0];
-const int STEP = 10000;                     // The number of movement steps
+const int STEP = 100000;                     // The number of movement steps
 const double PI = 3.1415926;
 const int NUMBER = int(DENSITY / (PI * RADIUS * RADIUS));
 //*************Set Parameters**************
@@ -124,7 +126,7 @@ void forceContactECM(Particle particles[NUMBER])
     {
         for (int j = 0; j < NUMBER; j++)
         {
-            if (isOverlap(particles[i], particles[j]))
+            if (isOverlap(particles[i], particles[j]) & (i != j))
             {
                 double d = boundaryDistance(particles[i], particles[j]);
                 double deltax, deltay, deltax1, deltay1;
@@ -146,12 +148,12 @@ void forceContactECM(Particle particles[NUMBER])
                     else
                         deltay = deltay1;
                 }
-                particles[i].force[0] += DIFFCOEFF * KCON * std::abs(2 * RADIUS - d) * deltax / std::max(d, EPS);
-                particles[i].force[1] += DIFFCOEFF * KCON * std::abs(2 * RADIUS - d) * deltay / std::max(d, EPS);
+                particles[i].force[0] += DIFFCOEFF * KCON * std::abs(2 * RADIUS - d) * deltax / d;
+                particles[i].force[1] += DIFFCOEFF * KCON * std::abs(2 * RADIUS - d) * deltay / d;
             }
             else
             {
-                if (isOppsiteMove(particles[i], particles[j]))
+                if (isOppsiteMove(particles[i], particles[j]) & (i != j))
                 {
                     double d = boundaryDistance(particles[i], particles[j]);
                     double deltax, deltay, deltax1, deltay1;
@@ -173,8 +175,8 @@ void forceContactECM(Particle particles[NUMBER])
                         else
                             deltay = deltay1;
                     }
-                    particles[i].force[0] += DIFFCOEFF * (KECM / std::max(d, EPS)) * (-deltax / std::max(d, EPS));
-                    particles[i].force[1] += DIFFCOEFF * (KECM / std::max(d, EPS)) * (-deltay / std::max(d, EPS));
+                    particles[i].force[0] += DIFFCOEFF * (KECM / d * (-deltax / d));
+                    particles[i].force[1] += DIFFCOEFF * (KECM / d * (-deltay / d));
                 }
             }
         }
@@ -237,12 +239,30 @@ int main()
         forceRandom(particles);
         move(particles);
         std::cout << "Step " << step + 1 << " out of " << STEP << std::endl;
-    }
 
-    std::ofstream fout1("position10000.txt");
-    for (int i = 0; i < NUMBER; i++)
-    {
-        fout1 << particles[i].position[0] << " " << particles[i].position[1] << " " << particles[i].force[0] << " " << particles[i].force[1] << std::endl;
-    }
-    fout1.close();
+        if (step == 10000-1){
+            std::ofstream fout1("position10000.txt");
+            for (int i = 0; i < NUMBER; i++)
+            {
+                fout1 << particles[i].position[0] << " " << particles[i].position[1] << " " << particles[i].force[0] << " " << particles[i].force[1] << std::endl;
+            }
+            fout1.close();}
+        if (step == 50000-1){
+            std::ofstream fout1("position50000.txt");
+            for (int i = 0; i < NUMBER; i++)
+            {
+                fout1 << particles[i].position[0] << " " << particles[i].position[1] << " " << particles[i].force[0] << " " << particles[i].force[1] << std::endl;
+            }
+            fout1.close();}
+        if (step == 100000-1){
+            std::ofstream fout1("position100000.txt");
+            for (int i = 0; i < NUMBER; i++)
+            {
+                fout1 << particles[i].position[0] << " " << particles[i].position[1] << " " << particles[i].force[0] << " " << particles[i].force[1] << std::endl;
+            }
+            fout1.close();}
+    }   
+
+    
+   
 }
